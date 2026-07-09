@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#A78BFA">
+<meta name="description" content="StorePulse - Modern inventory and sales dashboard">
+<title>StorePulse Dashboard</title>
+<link rel="manifest" id="manifest">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0B0F1E;
+  --bg-card: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --neon-purple: #A78BFA;
+  --neon-purple-glow: rgba(167, 139, 250, 0.5);
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 80px;
+  --topbar-height: 72px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.15) 0%, transparent 70%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+  filter: blur(100px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background: rgba(11, 15, 30, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border-glass);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-glass);
+  height: var(--topbar-height);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--neon-purple), #8B5CF6);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px var(--neon-purple-glow);
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .logo-text {
+  display: none;
+}
+
+.toggle-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: var(--neon-purple);
+}
+
+.nav {
+  padding: 16px 12px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.nav-item:hover, .nav-item.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  box-shadow: inset 0 0 0 1px var(--border-glass), 0 0 20px rgba(167, 139, 250, 0.2);
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .nav-text {
+  display: none;
+}
+
+/* Main Content */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
+
+.sidebar.collapsed ~ .main {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* Topbar */
+.topbar {
+  height: var(--topbar-height);
+  background: rgba(11, 15, 30, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-toggle {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--text-primary), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+}
+
+.search-box input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 10px 16px 10px 40px;
+  color: var(--text-primary);
+  font-size: 14px;
+  width: 240px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.icon-btn:hover {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: var(--neon-purple);
+}
+
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--danger);
+  border-radius: 50%;
+  border: 2px solid var(--bg-dark);
+}
+
+.date-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Content */
+.content {
+  padding: 24px;
+  max-width: 1400px;
+}
+
+/* KPI Grid - CRITICAL: 2 columns on mobile */
+.kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 40px var(--neon-purple-glow), 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-color: var(--neon-purple);
+}
+
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.kpi-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.kpi-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(139, 92, 246, 0.2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neon-purple);
+}
+
+.kpi-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.kpi-change {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi-change.positive {
+  color: var(--success);
+}
+
+.kpi-change.negative {
+  color: var(--danger);
+}
+
+/* Section */
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+/* Quick Actions - 2 columns on mobile */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.action-btn {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.action-btn:hover {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: var(--neon-purple);
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px var(--neon-purple-glow);
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(139, 92, 246, 0.2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.action-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-text h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.action-text p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Cards Grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Low Stock Alert */
+.alert-item {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.alert-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.alert-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.alert-badge {
+  background: var(--warning);
+  color: #0B0F1E;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Order List */
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.order-item:hover {
+  background: rgba(167, 139, 250, 0.08);
+  border-color: var(--border-glass);
+}
+
+.order-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-id {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.order-customer {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.order-meta {
+  text-align: right;
+}
+
+.order-amount {
+  font-weight: 600;
+  color: var(--neon-purple);
+  margin-bottom: 4px;
+}
+
+.order-status {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
+.status-completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+}
+
+/* Mobile Overlay */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* Responsive - Tablet and Mobile: 2 columns for KPI */
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .main {
+    margin-left: 0 !important;
+  }
+  
+  .mobile-toggle {
+    display: flex;
+  }
+  
+  .sidebar .toggle-btn {
+    display: none;
+  }
+  
+  .search-box {
+    display: none;
+  }
+  
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+  
+  .kpi-card {
+    padding: 20px;
+  }
+  
+  .kpi-value {
+    font-size: 28px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .date-pill {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 16px;
+  }
+  
+  .kpi-grid {
+    gap: 12px;
+  }
+  
+  .quick-actions {
+    gap: 12px;
+  }
+  
+  .action-btn {
+    padding: 16px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .action-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+  }
+  
+  .kpi-card {
+    padding: 16px;
+  }
+  
+  .kpi-value {
+    font-size: 24px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="overlay" id="overlay"></div>
+  
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <span class="logo-text">StorePulse</span>
+      </div>
+      <button class="toggle-btn" id="toggleBtn" aria-label="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+    <nav class="nav">
+      <a class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span class="nav-text">Orders</span>
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 7h-9"/>
+          <path d="M14 17H5"/>
+          <circle cx="17" cy="17" r="3"/>
+          <circle cx="7" cy="7" r="3"/>
+        </svg>
+        <span class="nav-text">Products</span>
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span class="nav-text">Analytics</span>
+      </a>
+      <a class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m-9-9h6m6 0h6"/>
+        </svg>
+        <span class="nav-text">Settings</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <h1 class="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Search products, orders...">
+        </div>
+        <div class="date-pill" id="currentDate"></div>
+        <button class="icon-btn" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notification-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Today's Sales</span>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value">₹3,310.00</div>
+          <div class="kpi-change positive">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="18 15 12 9 6 15"/>
+            </svg>
+            <span>12.5% from yesterday</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Pending Orders</span>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value">0</div>
+          <div class="kpi-change">
+            <span>No pending orders</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Low Stock Items</span>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value">1</div>
+          <div class="kpi-change negative">
+            <span>Requires attention</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Products</span>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-9"/>
+                <path d="M14 17H5"/>
+                <circle cx="17" cy="17" r="3"/>
+                <circle cx="7" cy="7" r="3"/>
+              </svg>
+            </div>
+          </div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-change">
+            <span>Across all categories</span>
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <h2 class="section-title">Quick Actions</h2>
+        <div class="quick-actions">
+          <a href="#" class="action-btn">
+            <div class="action-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div class="action-text">
+              <h3>Create Order</h3>
+              <p>Process new customer order</p>
+            </div>
+          </a>
+          <a href="#" class="action-btn">
+            <div class="action-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+            <div class="action-text">
+              <h3>Add Product</h3>
+              <p>Add new item to inventory</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <div class="cards-grid">
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Low Stock Alert</h2>
+          </div>
+          <div class="alert-item">
+            <div class="alert-info">
+              <div class="alert-name">ganji</div>
+              <div class="alert-meta">Stock: 8 pcs • ₹120.00</div>
+            </div>
+            <span class="alert-badge">Low Stock</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Orders</h2>
+          </div>
+          <div class="order-list">
+            <div class="order-item">
+              <div class="order-info">
+                <div class="order-id">#ORD-2847</div>
+                <div class="order-customer">Rahul Sharma</div>
+              </div>
+              <div class="order-meta">
+                <div class="order-amount">₹1,250.00</div>
+                <span class="order-status status-pending">Pending</span>
+              </div>
+            </div>
+            <div class="order-item">
+              <div class="order-info">
+                <div class="order-id">#ORD-2846</div>
+                <div class="order-customer">Priya Patel</div>
+              </div>
+              <div class="order-meta">
+                <div class="order-amount">₹890.00</div>
+                <span class="order-status status-completed">Completed</span>
+              </div>
+            </div>
+            <div class="order-item">
+              <div class="order-info">
+                <div class="order-id">#ORD-2845</div>
+                <div class="order-customer">Amit Kumar</div>
+              </div>
+              <div class="order-meta">
+                <div class="order-amount">₹1,170.00</div>
+                <span class="order-status status-completed">Completed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// PWA Manifest
+const manifest = {
+  name: "StorePulse Dashboard",
+  short_name: "StorePulse",
+  description: "Modern inventory and sales dashboard with glassmorphism design",
+  start_url: "/",
+  display: "standalone",
+  background_color: "#0B0F1E",
+  theme_color: "#A78BFA",
+  icons: [
+    {
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23A78BFA'/%3E%3Cpath d='M96 40l-48 72h32l-8 48 72-96h-32l8-24z' fill='white'/%3E%3C/svg%3E",
+      sizes: "192x192",
+      type: "image/svg+xml"
+    },
+    {
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23A78BFA'/%3E%3Cpath d='M256 100l-128 192h80l-24 120 192-240h-80l24-72z' fill='white'/%3E%3C/svg%3E",
+      sizes: "512x512",
+      type: "image/svg+xml"
+    }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+document.getElementById('manifest').href = URL.createObjectURL(manifestBlob);
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE_NAME = 'storepulse-v1';
+    const urlsToCache = ['/'];
+    
+    self.addEventListener('install', (event) => {
+      event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+      );
+      self.skipWaiting();
+    });
+    
+    self.addEventListener('fetch', (event) => {
+      event.respondWith(
+        caches.match(event.request).then((response) => response || fetch(event.request))
+      );
+    });
+    
+    self.addEventListener('activate', (event) => {
+      event.waitUntil(
+        caches.keys().then((keys) => Promise.all(
+          keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        ))
+      );
+      self.clients.claim();
+    });
+  `;
+  const swBlob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// Sidebar Toggle
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleBtn');
+const mobileToggle = document.getElementById('mobileToggle');
+const overlay = document.getElementById('overlay');
+
+toggleBtn.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+});
+
+mobileToggle.addEventListener('click', () => {
+  sidebar.classList.add('mobile-open');
+  overlay.classList.add('active');
+});
+
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('active');
+});
+
+// Restore sidebar state
+if (localStorage.getItem('sidebarCollapsed') === 'true') {
+  sidebar.classList.add('collapsed');
+}
+
+// Current Date
+const dateEl = document.getElementById('currentDate');
+const now = new Date();
+const options = { weekday: 'short', month: 'short', day: 'numeric' };
+dateEl.textContent = now.toLocaleDateString('en-US', options);
+
+// Nav active state
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+    if (window.innerWidth < 768) {
+      sidebar.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    }
+  });
+});
+
+// Add hover glow effect dynamically
+document.querySelectorAll('.kpi-card, .action-btn').forEach(el => {
+  el.addEventListener('mouseenter', function() {
+    this.style.boxShadow = '0 0 40px rgba(167, 139, 250, 0.5), 0 8px 24px rgba(0, 0, 0, 0.4)';
+  });
+  el.addEventListener('mouseleave', function() {
+    this.style.boxShadow = '';
+  });
+});
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
